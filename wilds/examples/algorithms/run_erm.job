@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_titanrtx_shared_course
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=ERM1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=3
+#SBATCH --time=04:00:00
+#SBATCH --mem=32000M
+#SBATCH --output=job_output/ERM_output_%A.out
+
+module purge
+module load 2021
+module load Anaconda3/2021.05
+
+# activate the environment
+source activate ./.conda/envs/fact3
+dataset='celebA' #"waterbirds"
+algorithm=ERM
+epochs=1
+seed=41
+
+log_file=logs/output_$algorithm/$dataset/seed_$seed
+
+root=data
+
+python3 wilds/examples/run_expt.py --dataset $dataset --algorithm $algorithm --root_dir $root --progress_bar --log_dir $log_file --seed $seed --n_epochs $epochs --download --device 1
+
+conda deactivate 
