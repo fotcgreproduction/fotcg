@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_titanrtx_shared_course
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=groupDRO_spu_mnist
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=3
+#SBATCH --time=45:00:00
+#SBATCH --mem=32000M
+#SBATCH --output=job_output/groupDRO_spu_mnist_%A.out
+
+module purge
+module load 2021
+module load Anaconda3/2021.05
+
+# activate the environment
+source activate ./.conda/envs/fact3
+dataset="spu_mnist"
+algorithm=groupDRO
+epochs=100
+seed=41
+log_file=logs/output_$algorithm/$dataset/seed_$seed
+
+mkdir -p $log_file 
+
+wandb_run_name="$algorithm"_"$dataset"_epochs_"$epochs"_seed_"$seed"TEST
+
+root=datasets
+
+python3 wilds/examples/run_expt.py --dataset $dataset --algorithm $algorithm --root_dir $root --progress_bar --log_dir $log_file --seed $seed --n_epochs $epochs --device 1 --use_wandb --wandb_kwargs project=FACT name=$wandb_run_name --download
+
+conda deactivate 
